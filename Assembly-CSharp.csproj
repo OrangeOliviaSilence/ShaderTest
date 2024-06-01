@@ -56,9 +56,10 @@
     <Compile Include="Assets\Scripts\ShaderTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Materials\L3.shader" />
-    <None Include="Assets\Materials\L2.shader" />
+    <None Include="Assets\Materials\Cut Off Test\Cut Off Test.shader" />
+    <None Include="Assets\Materials\Alpha Blend Test\Alpha Blend Test.shader" />
     <None Include="Assets\Materials\Surface Shader Test\LowPolySoldiers_demo\models\Soldier_L1.shader" />
+    <None Include="Assets\Materials\Surface Shader Test\LowPolySoldiers_demo\models\Soldier_L2.shader" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

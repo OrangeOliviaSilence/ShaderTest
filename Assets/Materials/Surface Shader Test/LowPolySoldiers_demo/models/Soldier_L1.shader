@@ -9,6 +9,7 @@ Shader "Custom/Soldier_L1"
 		_TessMaxDistance ("Tessellation Max Distance", Float) = 10
 		_TessEdgeLength ("Tessellation Edge length", Range(2,50)) = 15
 		_TessPhong ("Tessellation Phong Strengh", Range(0,1)) = 0.5
+		_WaveFreq ("Wave Freq", Range(0,2)) = 1
     }
 	SubShader
 	{
@@ -23,8 +24,10 @@ Shader "Custom/Soldier_L1"
 
 		CGPROGRAM
 		#pragma target 2.5
-		#pragma surface surf SimpleBlinnPhong fullforwardshadows tessellate:tessFixed tessphong:_TessPhong
+		#pragma surface surf Lambert fullforwardshadows tessellate:tessFixed tessphong:_TessPhong vertex:vert
+		#pragma enable_d3d11_debug_symbols
 		#include "Tessellation.cginc"
+		#define PI 3.14159265359
 
 		fixed4 _Color;
 		sampler2D _MainTex;
@@ -33,11 +36,17 @@ Shader "Custom/Soldier_L1"
 		float _TessMaxDistance;
 		float _TessEdgeLength;
 		float _TessPhong;
+		half _WaveFreq;
 
 		struct Input 
 		{
 			float2 uv_MainTex;
 		};
+
+		void vert(inout appdata_full v)
+		{
+			v.vertex.z += sin(_Time.y * 2 * PI * _WaveFreq) * (1 - v.texcoord.x);
+		}
 
 
 		/**************************************** 自定义光照模型函数 ****************************************/
@@ -83,7 +92,7 @@ Shader "Custom/Soldier_L1"
 			
 			half3 halfVector = normalize(normalizeLightDir + normalizeViewDir);
 			half nDotH = max(0, dot(halfVector, normalizeNormal));
-			float spec = pow(nDotH, 150);
+			float spec = pow(nDotH, 150);  // 幂一般取值100~200
 
 			half4 colorResult;
 			colorResult.rgb = _LightColor0.rgb * (spec * atten);
@@ -95,8 +104,8 @@ Shader "Custom/Soldier_L1"
 		// 光照模型：布林冯
 		inline half4 LightingSimpleBlinnPhong(SurfaceOutput s, half3 lightDir, half3 viewDir, half atten)
 		{
-			half4 resultColor = LightingWrapLambert(s, lightDir, atten) + 
-							    LightingSimpleSpecular(s, lightDir, viewDir, atten);
+			half4 resultColor = LightingSimpleSpecular(s, lightDir, viewDir, atten) + 
+								LightingWrapLambert(s, lightDir, atten);
 
 			return resultColor;
 		}
@@ -126,7 +135,10 @@ Shader "Custom/Soldier_L1"
 
 		void surf (Input IN, inout SurfaceOutput o)
 		{
-			o.Albedo = tex2D(_MainTex, IN.uv_MainTex).rgb * _Color;
+			fixed4 colorResult = tex2D(_MainTex, IN.uv_MainTex) * _Color;
+
+			o.Albedo = colorResult.rgb;
+			o.Alpha = colorResult.a;
 		}
 
 		ENDCG
